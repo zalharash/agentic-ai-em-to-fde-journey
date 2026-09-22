@@ -10,6 +10,26 @@
 
 # Critical detail: Both it must be the same model as ingestion — if query and stored docs were embedded by different models, the vectors would live in different, incomparable spaces, and distance would be meaningless.
 
+# --- PRODUCTION NOTE: Row-Level Security (RLS) not yet enabled ---
+# Current isolation relies entirely on the app remembering to add WHERE tenant_id = %s
+# to every query. This is a real risk: one missed filter = cross-tenant data leak.
+#
+# In production, RLS should be enabled at the table level so Postgres enforces
+# isolation even if application code forgets the filter:
+#
+#   ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
+#
+#   CREATE POLICY tenant_isolation ON documents
+#       USING (tenant_id = current_setting('app.current_tenant'));
+#
+# Then, per-connection/session, the app sets which tenant it's acting as:
+#
+# SET app.current_tenant = 'nordic-mfg';
+#
+# After that, ANY query against `documents` — even a bare `SELECT * FROM documents`
+# with no WHERE clause at all — will only ever see nordic-mfg rows. The filter
+# becomes structurally impossible to bypass, not just a convention to remember.
+# -------------------------------------------------------------------
 import psycopg
 from pgvector.psycopg import register_vector
 from sentence_transformers import SentenceTransformer

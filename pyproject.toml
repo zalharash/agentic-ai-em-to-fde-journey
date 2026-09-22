@@ -6,8 +6,9 @@ readme = "README.md"
 authors = [
     { email = "ziad.sv@outlook.com" }
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
+    "mcp<2",
     "numpy>=2.0.2",
     "openai>=2.48.0",
     "pgvector>=0.4.2",
